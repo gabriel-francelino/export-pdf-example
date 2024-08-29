@@ -5,6 +5,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
+
 @RestController
 @RequestMapping("/api/pdf")
 public class PdfController {
@@ -32,7 +34,7 @@ public class PdfController {
     }
 
     @GetMapping("/generate/{id}")
-    public ResponseEntity<byte[]> generatePdfById(@PathVariable Long id) {
+    public ResponseEntity<byte[]> generatePdfById(@PathVariable Long id) throws IOException {
         byte[] pdfBytes = pdfGenerationService.generatePdfFromAnalysisId(id);
 
         HttpHeaders headers = new HttpHeaders();
