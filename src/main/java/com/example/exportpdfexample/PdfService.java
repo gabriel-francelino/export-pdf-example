@@ -4,12 +4,21 @@ import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.kernel.pdf.PdfWriter;
 import com.itextpdf.layout.Document;
 import com.itextpdf.layout.element.Paragraph;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
+import java.util.Optional;
 
 @Service
+@AllArgsConstructor
 public class PdfService {
+    private final AnalysisRepository analysisRepository;
+
+    public Analysis save(Analysis analysis) {
+        return analysisRepository.save(analysis);
+    }
+
     public byte[] generatePdfFromAnalysis(Analysis analysis) {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
 
@@ -31,5 +40,14 @@ public class PdfService {
 
         // Retorna os bytes contendo os dados do PDF
         return byteArrayOutputStream.toByteArray();
+    }
+
+    public byte[] generatePdfFromAnalysisId(Long id) {
+        Optional<Analysis> analysisOptional = analysisRepository.findById(id);
+        if (analysisOptional.isPresent()) {
+            return generatePdfFromAnalysis(analysisOptional.get());
+        } else {
+            throw new IllegalArgumentException("Analysis not found with ID: " + id);
+        }
     }
 }
