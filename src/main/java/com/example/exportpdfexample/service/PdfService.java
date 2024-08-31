@@ -1,9 +1,15 @@
-package com.example.exportpdfexample;
+package com.example.exportpdfexample.service;
 
+import com.example.exportpdfexample.model.Analysis;
+import com.example.exportpdfexample.repository.AnalysisRepository;
+import com.itextpdf.io.font.constants.StandardFonts;
 import com.itextpdf.kernel.colors.WebColors;
+import com.itextpdf.kernel.font.PdfFont;
+import com.itextpdf.kernel.font.PdfFontFactory;
 import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.kernel.pdf.PdfWriter;
 import com.itextpdf.layout.Document;
+import com.itextpdf.layout.Style;
 import com.itextpdf.layout.element.Paragraph;
 import com.itextpdf.layout.properties.TextAlignment;
 import lombok.AllArgsConstructor;
@@ -18,9 +24,6 @@ import java.util.Optional;
 public class PdfService {
     private final AnalysisRepository analysisRepository;
 
-    public Analysis save(Analysis analysis) {
-        return analysisRepository.save(analysis);
-    }
 
     public byte[] generatePdfFromAnalysis(Analysis analysis) {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
@@ -51,34 +54,8 @@ public class PdfService {
         PdfDocument pdfDocument = new PdfDocument(pdfWriter);
         Document document = new Document(pdfDocument);
 
-
-        // Adiciona o título centralizado no topo
-        Paragraph title = new Paragraph("MICROSTAMP ANALYSIS")
-                .setFontSize(20)
-                .setBold()
-//                .setFontFamily("Arial")
-                // cor #b4894d em rgb
-                .setFontColor(WebColors.getRGBColor("#b4894d"))
-                .setTextAlignment(TextAlignment.CENTER);
-        document.add(title);
-
-        // Adiciona um espaçamento após o título
-        document.add(new Paragraph("\n"));
-
-        // Adiciona o título da análise
-        Paragraph analysisTitle = new Paragraph("Title: " + analysis.getTitle())
-                .setFontSize(16)
-//                .setFontFamily("Poppins")
-                .setBold()
-                .setTextAlignment(TextAlignment.LEFT);
-        document.add(analysisTitle);
-
-        // Adiciona a descrição da análise
-        Paragraph analysisDescription = new Paragraph("Description: " + analysis.getDescription())
-                .setFontSize(12)
-//                .setFontFamily("Poppins")
-                .setTextAlignment(TextAlignment.LEFT);
-        document.add(analysisDescription);
+        generateTitleOfDocument(document);
+        generateAnalysisParagraph(document, analysis);
 
         document.close();
         return byteArrayOutputStream.toByteArray();
@@ -91,5 +68,52 @@ public class PdfService {
         } else {
             throw new IllegalArgumentException("Analysis not found with ID: " + id);
         }
+    }
+
+    public byte[] generatePdfFromAllAnalysis() throws IOException {
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        PdfWriter pdfWriter = new PdfWriter(byteArrayOutputStream);
+        PdfDocument pdfDocument = new PdfDocument(pdfWriter);
+        Document document = new Document(pdfDocument);
+
+        generateTitleOfDocument(document);
+
+        for (Analysis analysis : analysisRepository.findAll()) {
+            generateAnalysisParagraph(document, analysis);
+        }
+
+        document.close();
+        return byteArrayOutputStream.toByteArray();
+    }
+
+    private void generateTitleOfDocument(Document document) throws IOException {
+        Style titleStyle = new Style();
+        PdfFont font = PdfFontFactory.createFont(StandardFonts.TIMES_ITALIC);
+        titleStyle.setFont(font);
+
+        Paragraph title = new Paragraph("MICROSTAMP ANALYSIS")
+                .setFontSize(20)
+                .setBold()
+                .setFontColor(WebColors.getRGBColor("#b4894d"))
+                .setTextAlignment(TextAlignment.CENTER)
+                .addStyle(titleStyle);
+
+        document.add(title);
+        document.add(new Paragraph("\n"));
+    }
+
+    private void generateAnalysisParagraph(Document document, Analysis analysis) {
+        Paragraph analysisTitle = new Paragraph("Title: " + analysis.getTitle())
+                .setFontSize(16)
+                .setBold()
+                .setTextAlignment(TextAlignment.LEFT);
+        document.add(analysisTitle);
+
+        Paragraph analysisDescription = new Paragraph("Description: " + analysis.getDescription())
+                .setFontSize(12)
+                .setTextAlignment(TextAlignment.LEFT);
+        document.add(analysisDescription);
+
+        document.add(new Paragraph("\n"));
     }
 }

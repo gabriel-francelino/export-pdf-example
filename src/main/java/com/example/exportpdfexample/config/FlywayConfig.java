@@ -1,4 +1,4 @@
-package com.example.exportpdfexample;
+package com.example.exportpdfexample.config;
 
 import org.flywaydb.core.Flyway;
 import org.springframework.beans.factory.annotation.Autowired;
